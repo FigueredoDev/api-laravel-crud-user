@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
+    const USER_NOT_FOUND_MESSAGE = 'User not found';
+
     public function index()
     {
         $users = User::paginate();
@@ -34,7 +36,7 @@ class UserController extends Controller
             return new UserResource($user);
         } catch (ModelNotFoundException $error) {
             return response()->json([
-                'message' => 'User not found'
+                'message' => $this::USER_NOT_FOUND_MESSAGE
             ], 404);
         }
     }
@@ -54,7 +56,21 @@ class UserController extends Controller
             return new UserResource($user);
         } catch (ModelNotFoundException $error) {
             return response()->json([
-                'message' => 'User not found'
+                'message' => $this::USER_NOT_FOUND_MESSAGE
+            ], 404);
+        }
+    }
+
+    public function destroy(string $id)
+    {
+        try {
+            $user = User::findOrFail($id);
+            $user->delete();
+
+            return response()->json([], 204);
+        } catch (ModelNotFoundException $error) {
+            return response()->json([
+                'message' => $this::USER_NOT_FOUND_MESSAGE
             ], 404);
         }
     }
