@@ -38,4 +38,24 @@ class UserController extends Controller
             ], 404);
         }
     }
+
+    public function update(StoreUpdateUserRequest $request, string $id)
+    {
+        try {
+            $user = User::findOrFail($id);
+            $data = $request->all();
+
+            if ($data['password']) {
+                $data['password'] = bcrypt($data['password']);
+            }
+
+            $user->update($data);
+
+            return new UserResource($user);
+        } catch (ModelNotFoundException $error) {
+            return response()->json([
+                'message' => 'User not found'
+            ], 404);
+        }
+    }
 }
