@@ -13,9 +13,13 @@ class UserController extends Controller
 {
     const USER_NOT_FOUND_MESSAGE = 'User not found';
 
+    public function __construct(protected User $repository)
+    {
+    }
+
     public function index()
     {
-        $users = User::paginate();
+        $users = $this->repository->paginate();
 
         return UserResource::collection($users);
     }
@@ -24,7 +28,7 @@ class UserController extends Controller
     {
         $data = $request->validated();
         $data['password'] = bcrypt($data['password']);
-        $user = User::create($data);
+        $user = $this->repository->create($data);
 
         return new UserResource($user);
     }
@@ -32,7 +36,7 @@ class UserController extends Controller
     public function show(string $id)
     {
         try {
-            $user = User::findOrFail($id);
+            $user = $this->repository->findOrFail($id);
             return new UserResource($user);
         } catch (ModelNotFoundException $error) {
             return response()->json([
@@ -44,8 +48,8 @@ class UserController extends Controller
     public function update(StoreUpdateUserRequest $request, string $id)
     {
         try {
-            $user = User::findOrFail($id);
-            $data = $request->all();
+            $user = $this->repository->findOrFail($id);
+            $data = $request->validated();
 
             if ($data['password']) {
                 $data['password'] = bcrypt($data['password']);
@@ -64,7 +68,7 @@ class UserController extends Controller
     public function destroy(string $id)
     {
         try {
-            $user = User::findOrFail($id);
+            $user = $this->repository->findOrFail($id);
             $user->delete();
 
             return response()->json([], 204);
